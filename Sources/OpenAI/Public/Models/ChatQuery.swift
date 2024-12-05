@@ -725,8 +725,8 @@ public struct ChatQuery: Equatable, Codable, Streamable {
           public typealias JSONType = ChatQuery.ChatCompletionToolParam.FunctionDefinition.FunctionParameters.JSONType
           
           public let type: Self.JSONType
-          public let properties:[String: Property]?
           public let description: String?
+          public let properties:[String: Property]?
           public let format: String?
           public let items: Self.Items?
           public let required: [String]?
@@ -742,8 +742,8 @@ public struct ChatQuery: Equatable, Codable, Streamable {
           
           public init(
             type: Self.JSONType,
-            properties: [String : Property]? = nil,
             description: String? = nil,
+            properties: [String : Property]? = nil,
             format: String? = nil,
             items: Self.Items? = nil,
             required: [String]? = nil,
@@ -758,8 +758,8 @@ public struct ChatQuery: Equatable, Codable, Streamable {
             uniqueItems: Bool? = nil
           ) {
             self.type = type
-            self.properties = properties
             self.description = description
+            self.properties = properties
             self.format = format
             self.items = items
             self.required = required
