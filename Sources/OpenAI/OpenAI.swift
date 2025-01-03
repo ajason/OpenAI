@@ -31,9 +31,12 @@ final public class OpenAI: OpenAIProtocol {
     public let isUsingV1: Bool
     public let customPath: String?
 
+    /// 是否打印API响应数据
+    public let debug: Bool
+
     public init(
       token: String, organizationIdentifier: String? = nil, host: String = "api.openai.com", port: Int = 443, scheme: String = "https", timeoutInterval: TimeInterval = 60.0, isUsingV1: Bool = true,
-      customPath: String? = nil
+      customPath: String? = nil, debug: Bool = false  // 默认关闭
     ) {
       self.token = token
       self.organizationIdentifier = organizationIdentifier
@@ -43,6 +46,7 @@ final public class OpenAI: OpenAIProtocol {
       self.timeoutInterval = timeoutInterval
       self.isUsingV1 = isUsingV1
       self.customPath = customPath
+      self.debug = debug
     }
   }
 
@@ -146,6 +150,14 @@ extension OpenAI {
         guard let data = data else {
           return completion(.failure(OpenAIError.emptyData))
         }
+
+        // 根据 debug 配置决定是否打印
+        if self.configuration.debug,
+          let responseString = String(data: data, encoding: .utf8)
+        {
+          print("API Response:", responseString)
+        }
+
         let decoder = JSONDecoder()
         do {
           completion(.success(try decoder.decode(ResultType.self, from: data)))
