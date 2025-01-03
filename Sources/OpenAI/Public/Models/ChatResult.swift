@@ -81,41 +81,57 @@ public struct ChatResult: Codable, Equatable {
     public let promptTokens: Int
     public let totalTokens: Int
 
-    // 下划线格式的键
-    enum SnakeCaseKeys: String, CodingKey {
-      case completionTokens = "completion_tokens"
-      case promptTokens = "prompt_tokens"
-      case totalTokens = "total_tokens"
-    }
-
-    // 驼峰格式的键
-    enum CamelCaseKeys: String, CodingKey {
-      case completionTokens = "completionTokens"
-      case promptTokens = "promptTokens"
-      case totalTokens = "totalTokens"
-    }
-
-    public init(from decoder: Decoder) throws {
-      // 先尝试下划线格式
-      if let snakeContainer = try? decoder.container(keyedBy: SnakeCaseKeys.self) {
-        self.completionTokens = try snakeContainer.decode(Int.self, forKey: .completionTokens)
-        self.promptTokens = try snakeContainer.decode(Int.self, forKey: .promptTokens)
-        self.totalTokens = try snakeContainer.decode(Int.self, forKey: .totalTokens)
-      } else {
-        // 如果失败则尝试驼峰格式
-        let camelContainer = try decoder.container(keyedBy: CamelCaseKeys.self)
-        self.completionTokens = try camelContainer.decode(Int.self, forKey: .completionTokens)
-        self.promptTokens = try camelContainer.decode(Int.self, forKey: .promptTokens)
-        self.totalTokens = try camelContainer.decode(Int.self, forKey: .totalTokens)
-      }
-    }
-
-    // 保持原有的编码方式（使用下划线格式）
     public func encode(to encoder: Encoder) throws {
-      var container = encoder.container(keyedBy: SnakeCaseKeys.self)
+      var container = encoder.container(keyedBy: CodingKeys.self)
       try container.encode(completionTokens, forKey: .completionTokens)
       try container.encode(promptTokens, forKey: .promptTokens)
       try container.encode(totalTokens, forKey: .totalTokens)
+    }
+
+    public init(from decoder: Decoder) throws {
+      let container = try decoder.container(keyedBy: CodingKeys.self)
+
+      // 完成令牌
+      if let tokens = try? container.decode(Int.self, forKey: .completionTokens) {
+        self.completionTokens = tokens
+      } else if let tokens = try? container.decode(Int.self, forKey: .completionTokensSnake) {
+        self.completionTokens = tokens
+      } else {
+        throw DecodingError.keyNotFound(
+          CodingKeys.completionTokens,
+          .init(codingPath: [], debugDescription: "No completion tokens found"))
+      }
+
+      // 提示令牌
+      if let tokens = try? container.decode(Int.self, forKey: .promptTokens) {
+        self.promptTokens = tokens
+      } else if let tokens = try? container.decode(Int.self, forKey: .promptTokensSnake) {
+        self.promptTokens = tokens
+      } else {
+        throw DecodingError.keyNotFound(
+          CodingKeys.promptTokens,
+          .init(codingPath: [], debugDescription: "No prompt tokens found"))
+      }
+
+      // 总令牌
+      if let tokens = try? container.decode(Int.self, forKey: .totalTokens) {
+        self.totalTokens = tokens
+      } else if let tokens = try? container.decode(Int.self, forKey: .totalTokensSnake) {
+        self.totalTokens = tokens
+      } else {
+        throw DecodingError.keyNotFound(
+          CodingKeys.totalTokens,
+          .init(codingPath: [], debugDescription: "No total tokens found"))
+      }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+      case completionTokens = "completionTokens"
+      case promptTokens = "promptTokens"
+      case totalTokens = "totalTokens"
+      case completionTokensSnake = "completion_tokens"
+      case promptTokensSnake = "prompt_tokens"
+      case totalTokensSnake = "total_tokens"
     }
   }
 
