@@ -77,7 +77,6 @@ public struct ChatResult: Codable, Equatable {
   }
 
   public struct CompletionUsage: Codable, Equatable {
-
     /// Number of tokens in the generated completion.
     public let completionTokens: Int
     /// Number of tokens in the prompt.
@@ -89,6 +88,30 @@ public struct ChatResult: Codable, Equatable {
       case completionTokens = "completion_tokens"
       case promptTokens = "prompt_tokens"
       case totalTokens = "total_tokens"
+    }
+
+    public init(from decoder: Decoder) throws {
+      let container = try decoder.container(keyedBy: CodingKeys.self)
+
+      // 尝试使用下划线格式的键
+      if let completionTokens = try? container.decode(Int.self, forKey: .completionTokens) {
+        self.completionTokens = completionTokens
+      } else {
+        // 尝试使用驼峰格式的键
+        self.completionTokens = try decoder.singleValueContainer().decode(Int.self)
+      }
+
+      if let promptTokens = try? container.decode(Int.self, forKey: .promptTokens) {
+        self.promptTokens = promptTokens
+      } else {
+        self.promptTokens = try decoder.singleValueContainer().decode(Int.self)
+      }
+
+      if let totalTokens = try? container.decode(Int.self, forKey: .totalTokens) {
+        self.totalTokens = totalTokens
+      } else {
+        self.totalTokens = try decoder.singleValueContainer().decode(Int.self)
+      }
     }
   }
 
