@@ -77,41 +77,45 @@ public struct ChatResult: Codable, Equatable {
   }
 
   public struct CompletionUsage: Codable, Equatable {
-    /// Number of tokens in the generated completion.
     public let completionTokens: Int
-    /// Number of tokens in the prompt.
     public let promptTokens: Int
-    /// Total number of tokens used in the request (prompt + completion).
     public let totalTokens: Int
 
-    enum CodingKeys: String, CodingKey {
+    // 下划线格式的键
+    enum SnakeCaseKeys: String, CodingKey {
       case completionTokens = "completion_tokens"
       case promptTokens = "prompt_tokens"
       case totalTokens = "total_tokens"
     }
 
+    // 驼峰格式的键
+    enum CamelCaseKeys: String, CodingKey {
+      case completionTokens = "completionTokens"
+      case promptTokens = "promptTokens"
+      case totalTokens = "totalTokens"
+    }
+
     public init(from decoder: Decoder) throws {
-      let container = try decoder.container(keyedBy: CodingKeys.self)
-
-      // 尝试使用下划线格式的键
-      if let completionTokens = try? container.decode(Int.self, forKey: .completionTokens) {
-        self.completionTokens = completionTokens
+      // 先尝试下划线格式
+      if let snakeContainer = try? decoder.container(keyedBy: SnakeCaseKeys.self) {
+        self.completionTokens = try snakeContainer.decode(Int.self, forKey: .completionTokens)
+        self.promptTokens = try snakeContainer.decode(Int.self, forKey: .promptTokens)
+        self.totalTokens = try snakeContainer.decode(Int.self, forKey: .totalTokens)
       } else {
-        // 尝试使用驼峰格式的键
-        self.completionTokens = try decoder.singleValueContainer().decode(Int.self)
+        // 如果失败则尝试驼峰格式
+        let camelContainer = try decoder.container(keyedBy: CamelCaseKeys.self)
+        self.completionTokens = try camelContainer.decode(Int.self, forKey: .completionTokens)
+        self.promptTokens = try camelContainer.decode(Int.self, forKey: .promptTokens)
+        self.totalTokens = try camelContainer.decode(Int.self, forKey: .totalTokens)
       }
+    }
 
-      if let promptTokens = try? container.decode(Int.self, forKey: .promptTokens) {
-        self.promptTokens = promptTokens
-      } else {
-        self.promptTokens = try decoder.singleValueContainer().decode(Int.self)
-      }
-
-      if let totalTokens = try? container.decode(Int.self, forKey: .totalTokens) {
-        self.totalTokens = totalTokens
-      } else {
-        self.totalTokens = try decoder.singleValueContainer().decode(Int.self)
-      }
+    // 保持原有的编码方式（使用下划线格式）
+    public func encode(to encoder: Encoder) throws {
+      var container = encoder.container(keyedBy: SnakeCaseKeys.self)
+      try container.encode(completionTokens, forKey: .completionTokens)
+      try container.encode(promptTokens, forKey: .promptTokens)
+      try container.encode(totalTokens, forKey: .totalTokens)
     }
   }
 
