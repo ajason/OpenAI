@@ -28,7 +28,7 @@ public struct ChatResult: Codable, Equatable, Sendable {
             public let role: String
             /// Annotations for the message, when applicable, as when using the web search tool.
             /// Web search tool: https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat
-            public let annotations: [Annotation]
+            public let annotations: [Annotation]?
             /// If the audio output modality is requested, this object contains data about the audio response from the model.
             /// Learn more: https://platform.openai.com/docs/guides/audio
             public let audio: Audio?
